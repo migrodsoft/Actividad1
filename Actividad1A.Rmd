@@ -1,0 +1,104 @@
+---
+title: "Actividad1A"
+author: "MiguelRodriguez"
+date: "20/2/2022"
+output: 
+  html_document: 
+    df_print: kable
+---
+
+## Actividad 1
+
+**Barrio: La flora**
+
+**Tipo: Apartamento**
+
+Paso 1. Filtrar un barrio de interes y solo apartamentos:
+Se tomará como referencia el barrio "La flora" y sus coincidencias cercanas
+
+```{r message=FALSE, warning=FALSE}
+library(readxl)
+Datos = read_excel("C:/Data/Datos_Vivienda M1.xlsx")
+
+ID=1:dim(Datos)[1]
+Datos=data.frame(ID,Datos)
+
+pos=which(Datos$Barrio=="la flora")
+datos_sub=Datos[pos,]
+
+#Total de registros de "la flora"
+length(pos)
+
+
+require(RecordLinkage)
+pos2=which(jarowinkler("la flora",Datos$Barrio)>0.95 & Datos$Tipo=="Apartamento")
+datos_sub=Datos[pos2,]
+head(datos_sub)
+
+#Total de registros de "la flora" y sus coincidencias cercanas tipo "Apartamento"
+length(pos2)
+
+```
+
+Paso 2. Exploración Inicial
+```{r message=FALSE, warning=FALSE}
+##Tabla de indicadores Importantes para Precio y Area construida
+
+cantidad_ofertas=length(datos_sub$Barrio)
+
+minimo_precio=min(datos_sub$precio_millon,na.rm = TRUE)
+maximo_precio=max(datos_sub$precio_millon,na.rm = TRUE)
+promedio_precio=mean(datos_sub$precio_millon,na.rm = TRUE)
+media_precio=median(datos_sub$precio_millon,na.rm = TRUE)
+desvest_Precio=sd(datos_sub$precio_millon,na.rm = TRUE)
+
+desc_Precio=data.frame(cantidad_ofertas,minimo_precio,maximo_precio,promedio_precio,desvest_Precio,media_precio)
+
+desc_Precio
+
+minimo_areacons=min(datos_sub$Area_contruida,na.rm = TRUE)
+maximo_areacons=max(datos_sub$Area_contruida,na.rm = TRUE)
+promedio_areacons=mean(datos_sub$Area_contruida,na.rm = TRUE)
+media_areacons=median(datos_sub$Area_contruida,na.rm = TRUE)
+desvest_areacons=sd(datos_sub$Area_contruida,na.rm = TRUE)
+
+desc_AreaCons=data.frame(cantidad_ofertas,minimo_areacons,maximo_areacons,promedio_areacons,desvest_areacons,media_areacons)
+
+desc_AreaCons
+
+```
+
+Paso3. Visualización en Mapa Iteractivo
+
+```{r message=FALSE, warning=FALSE}
+require(leaflet)
+library( htmltools )
+#opción 1
+leaflet() %>% addCircleMarkers(lng = datos_sub$cordenada_longitud, lat = datos_sub$Cordenada_latitud, radius = 1, color = "black",label = paste0( 'ID: ',datos_sub$ID,', Precio: ', datos_sub$precio_millon, ', Area: ', datos_sub$Area_contruida, ', Barrio: ', datos_sub$Barrio,', Lat: ',datos_sub$Cordenada_latitud,', Long: ',datos_sub$cordenada_longitud)) %>% addTiles()
+
+#opción 2
+leaflet() %>% addMarkers(lng = datos_sub$cordenada_longitud, lat = datos_sub$Cordenada_latitud, label = paste0( 'ID: ',datos_sub$ID,', Precio: ', datos_sub$precio_millon, ', Area: ', datos_sub$Area_contruida, ', Barrio: ', datos_sub$Barrio,', Lat: ',datos_sub$Cordenada_latitud,', Long: ',datos_sub$cordenada_longitud )) %>% addTiles()
+```
+
+Paso 4. Exploración Bivariada entre Precio y Área Construida
+
+```{r message=FALSE, warning=FALSE}
+require(ggplot2)
+require(plotly)
+```
+
+
+```{r message=FALSE, warning=FALSE}
+```
+
+
+```{r message=FALSE, warning=FALSE}
+g1=ggplot(data=datos_sub,aes(y=precio_millon,x=Area_contruida)) + geom_point() + geom_smooth()
+ggplotly(g1)
+
+pos3=which(datos_sub$Area_contruida<200)
+datos_sub2=datos_sub[pos3,]
+
+g2=ggplot(data=datos_sub2,aes(y=precio_millon,x=Area_contruida)) + geom_point() + geom_smooth()
+ggplotly(g2)
+```
